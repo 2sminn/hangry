@@ -1,7 +1,7 @@
 # 🍽️ WaitLess : 대규모 핫플 웨이팅 서비스
-<div>
-  <img src="https://github.com/user-attachments/assets/3101f745-0639-49d1-8fb9-7fd9aa093b3c" style="height: 300px;">
-  <img src="https://github.com/user-attachments/assets/25b7f919-f93a-437e-a733-8e22b8f604a1" style="height: 300px;">
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/3101f745-0639-49d1-8fb9-7fd9aa093b3c" width="45%">
+  <img src="https://github.com/user-attachments/assets/25b7f919-f93a-437e-a733-8e22b8f604a1" width="45%">
 </div>
 
 ## 🗣️ 프로젝트 소개
