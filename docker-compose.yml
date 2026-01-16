@@ -23,6 +23,18 @@ services:
       - "6379:6379"
       - "8001:8001"
 
+  redis-exporter:
+    image: oliver006/redis_exporter:latest
+    container_name: redis-exporter
+    restart: always
+    environment:
+      REDIS_ADDR: "redis://redis-stack:6379"
+      REDIS_PASSWORD: "systempass"
+    ports:
+      - "9121:9121"
+    depends_on:
+      - redis-stack
+
   zookeeper:
     image: wurstmeister/zookeeper:latest
     platform: linux/amd64
