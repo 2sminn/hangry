@@ -9,7 +9,12 @@ import lombok.*;
 import java.util.UUID;
 
 @Entity
-@Table(name = "p_review")
+@Table(
+    name = "p_review",
+    indexes = {
+        @Index(name = "idx_p_review_restaurant_type", columnList = "restaurant_id, review_type")
+    }
+)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
