@@ -14,20 +14,20 @@ export const options = {
 const BASE_URL = 'http://localhost:19091'; // review-service port
 const API_ENDPOINT = '/api/reviews/app/statistics';
 // TODO: 실제 테스트 시 유효한 토큰으로 교체 필요
-const ACCESS_TOKEN = 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwicm9sZSI6IkFETUlOIiwiaWF0IjoxNzU2OTc1Njk0LCJleHAiOjE3NTY5NzkyOTR9.gypCjffFQ4RbH84vtEoL50szDZTFmn8zqlPJogIvAOQ';
+const ACCESS_TOKEN = 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwicm9sZSI6IkFETUlOIiwiaWF0IjoxNzY5NTgxNTg0LCJleHAiOjE3Njk1ODUxODR9.EbEGu3h-blWnkz4iSn0L_bMrUMUUxhuAw03Ij6PMbuU';
 
 // 시나리오별 식당 ID 샘플
 const BATCH_IDS = [
-    '11111111-aaaa-bbbb-cccc-111111111111', // 캐시 데이터 존재
-    '22222222-aaaa-bbbb-cccc-222222222222',
-    '33333333-aaaa-bbbb-cccc-333333333333',
-    '44444444-aaaa-bbbb-cccc-444444444444',
-    '55555555-aaaa-bbbb-cccc-555555555555',
-    '66666666-aaaa-bbbb-cccc-666666666666', // 캐시 미존재 (테스트 전에 Redis에서 삭제 권장)
-    '77777777-aaaa-bbbb-cccc-777777777777',
-    '88888888-aaaa-bbbb-cccc-888888888888',
-    '99999999-aaaa-bbbb-cccc-999999999999',
-    '87654321-aaaa-bbbb-cccc-aaaaaaaaaaaa'
+    '12345678-aaaa-bbbb-cccc-111111111111', // 캐시 데이터 존재
+    '12345678-aaaa-bbbb-cccc-222222222222',
+    '12345678-aaaa-bbbb-cccc-333333333333',
+    '12345678-aaaa-bbbb-cccc-444444444444',
+    '12345678-aaaa-bbbb-cccc-555555555555',
+    '12345678-aaaa-bbbb-cccc-666666666666', // 캐시 미존재 (테스트 전에 Redis에서 삭제 권장)
+    '12345678-aaaa-bbbb-cccc-777777777777',
+    '12345678-aaaa-bbbb-cccc-888888888888',
+    '12345678-aaaa-bbbb-cccc-999999999999',
+    '12345678-aaaa-bbbb-cccc-aaaaaaaaaaaa'
 ];
 
 // HIT: 앞의 5개
