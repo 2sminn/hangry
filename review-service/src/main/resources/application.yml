@@ -6,6 +6,14 @@ spring:
     username: root
     password: root
     driver-class-name: org.mariadb.jdbc.Driver
+    hikari:
+      minimum-idle: 10
+      maximum-pool-size: 40      # 초기 설정으로 복원 (일관된 결과 확인)
+      connection-timeout: 15000  # 초기 설정으로 복원 (실패율 0% 확보)
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      leak-detection-threshold: 60000
+      connection-test-query: "SELECT 1"
   jpa:
     database-platform: org.hibernate.dialect.MariaDBDialect
     hibernate:
@@ -15,6 +23,7 @@ spring:
         format_sql: true
         show_sql: true
         default_batch_fetch_size: 50
+        generate_statistics: true
     open-in-view: false
   data:
     redis:
@@ -71,13 +80,18 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,prometheus
+        include: health,info,prometheus,metrics
   endpoint:
     health:
       show-details: always
   metrics:
     tags:
       application: ${spring.application.name}
+    enable:
+      all: true
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
   tracing:
     sampling:
       probability: 1.0
