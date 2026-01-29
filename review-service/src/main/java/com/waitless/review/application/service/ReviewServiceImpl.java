@@ -44,7 +44,7 @@ public class ReviewServiceImpl implements ReviewService, ReviewCommandUseCase {
     @Override
     @Transactional
     public PostReviewResult createReview(PostReviewCommand command) {
-        visitedReservationValidator.validate(command);
+//        visitedReservationValidator.validate(command);
         Review review = reviewServiceMapper.toEntity(command);
         Review saved = reviewRepository.save(review);
 
