@@ -25,6 +25,8 @@ public class ReviewRepositoryCustomImpl implements ReviewRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
     private static final QReview review = QReview.review;
+    public static final int STATS_QUERY_CHUNK_THRESHOLD = 100;
+    public static final int STATS_QUERY_CHUNK_SIZE = 50;
 
     @Override
     public Page<Review> searchByCondition(ReviewSearchCondition condition, Pageable pageable) {
@@ -74,16 +76,16 @@ public class ReviewRepositoryCustomImpl implements ReviewRepositoryCustom {
 
         List<Tuple> results = queryFactory
                 .select(
-                        review.restaurantId, // group key
-                        review.id.countDistinct(), // 리뷰 수
-                        review.rating.ratingValue.avg() // 평균평점
+                        review.restaurantId,
+                        review.id.countDistinct(),
+                        review.rating.ratingValue.avg()
                 )
                 .from(review)
                 .where(
-                        review.restaurantId.in(restaurantIds), // 동적 IN 조건
+                        review.restaurantId.in(restaurantIds),
                         notDeleted()
                 )
-                .groupBy(review.restaurantId) // 집계 단위
+                .groupBy(review.restaurantId)
                 .fetch();
 
         Map<UUID, ReviewStatisticsProjection> resultMap = new HashMap<>();
@@ -122,6 +124,6 @@ public class ReviewRepositoryCustomImpl implements ReviewRepositoryCustom {
     }
 
     private BooleanExpression notDeleted() {
-        return review.type.reviewType.ne(ReviewType.Type.DELETED);
+        return review.type.reviewType.in(ReviewType.Type.NORMAL, ReviewType.Type.EDITED);
     }
 }

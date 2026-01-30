@@ -22,6 +22,19 @@ services:
     ports:
       - "6379:6379"
       - "8001:8001"
+
+  redis-exporter:
+    image: oliver006/redis_exporter:latest
+    container_name: redis-exporter
+    restart: always
+    environment:
+      REDIS_ADDR: "redis://redis-stack:6379"
+      REDIS_PASSWORD: "systempass"
+    ports:
+      - "9121:9121"
+    depends_on:
+      - redis-stack
+
   zookeeper:
     image: wurstmeister/zookeeper:latest
     platform: linux/amd64
@@ -44,6 +57,7 @@ services:
       KAFKA_LISTENERS: INSIDE://0.0.0.0:29092,OUTSIDE://0.0.0.0:9092
       KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 
