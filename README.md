@@ -176,7 +176,7 @@
 
 ### 2️⃣ [쿠폰 발급시 분산 락으로 동시성 제어](https://github.com/teamsparta-hangry/hangry/wiki/%5B%ED%8A%B8%EB%9F%AC%EB%B8%94%EC%8A%88%ED%8C%85%5D-%EC%BF%A0%ED%8F%B0-%EB%B0%9C%EA%B8%89%EC%8B%9C-%EB%B6%84%EC%82%B0-%EB%9D%BD%EC%9C%BC%EB%A1%9C-%EB%8F%99%EC%8B%9C%EC%84%B1-%EC%A0%9C%EC%96%B4)
 
-### 3️⃣ [단건형 → 배치형 API 전환 + Redis MGET, pipelined](https://github.com/teamsparta-hangry/hangry/wiki/%5B%EC%84%B1%EB%8A%A5-%EB%B6%80%ED%95%98-%ED%85%8C%EC%8A%A4%ED%8A%B8%5D-%EB%A6%AC%EB%B7%B0%ED%86%B5%EA%B3%84%EC%A1%B0%ED%9A%8C(%EB%8B%A8%EA%B1%B4%ED%98%95-%E2%86%92-%EB%B0%B0%EC%B9%98%ED%98%95)-API-%EC%A0%84%ED%99%98-Redis-MGET,-Pipelining)
+### 3️⃣ [성능/부하 테스트: 리뷰통계조회(단건형 → 배치형) API 전환 Redis MGET, Pipelining](https://github.com/teamsparta-hangry/hangry/wiki/%5B%EC%84%B1%EB%8A%A5-%EB%B6%80%ED%95%98-%ED%85%8C%EC%8A%A4%ED%8A%B8%5D-%EB%A6%AC%EB%B7%B0%ED%86%B5%EA%B3%84%EC%A1%B0%ED%9A%8C(%EB%8B%A8%EA%B1%B4%ED%98%95-%E2%86%92-%EB%B0%B0%EC%B9%98%ED%98%95)-API-%EC%A0%84%ED%99%98-Redis-MGET,-Pipelining)
 
 ### 4️⃣ [Kafka 이벤트 로깅 및 DLQ 설정](https://github.com/teamsparta-hangry/hangry/wiki/%5B%ED%8A%B8%EB%9F%AC%EB%B8%94%EC%8A%88%ED%8C%85%5D-Kafka-%EC%9D%B4%EB%B2%A4%ED%8A%B8-%EB%A1%9C%EA%B9%85-%EB%B0%8F-DLQ-%EC%84%A4%EC%A0%95)
 
