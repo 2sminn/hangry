@@ -10,7 +10,7 @@ import java.util.UUID;
 
 @Builder
 public record GetReviewListResponseDto(
-        List<Item> reviews,
+        List<Item> items,
         int pageNumber,
         int pageSize,
         long totalElements,
