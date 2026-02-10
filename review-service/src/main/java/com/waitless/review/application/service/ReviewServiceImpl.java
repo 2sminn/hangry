@@ -7,6 +7,7 @@ import com.waitless.review.application.dto.command.DeleteReviewCommand;
 import com.waitless.review.application.dto.command.PageCommand;
 import com.waitless.review.application.dto.command.PostReviewCommand;
 import com.waitless.review.application.dto.command.ReviewStatisticsCommand;
+import com.waitless.review.application.dto.command.UpdateReviewCommand;
 import com.waitless.review.application.dto.result.*;
 import com.waitless.review.application.mapper.ReviewServiceMapper;
 import com.waitless.review.application.port.in.ReviewCommandUseCase;
@@ -17,6 +18,9 @@ import com.waitless.review.application.validator.VisitedReservationValidator;
 import com.waitless.review.domain.entity.Review;
 import com.waitless.review.domain.repository.ReviewRepository;
 import com.waitless.review.domain.repository.ReviewRepositoryCustom;
+import com.waitless.common.exception.BusinessException;
+import com.waitless.common.exception.code.CommonErrorCode;
+import com.waitless.review.domain.vo.Rating;
 import com.waitless.review.domain.vo.ReviewSearchCondition;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,7 +48,10 @@ public class ReviewServiceImpl implements ReviewService, ReviewCommandUseCase {
     @Override
     @Transactional
     public PostReviewResult createReview(PostReviewCommand command) {
-//        visitedReservationValidator.validate(command);
+        visitedReservationValidator.validate(command);
+        if (reviewRepository.existsByReservationId(command.reservationId())) {
+            throw BusinessException.from(CommonErrorCode.CONSTRAINT_VIOLATION);
+        }
         Review review = reviewServiceMapper.toEntity(command);
         Review saved = reviewRepository.save(review);
 
@@ -62,12 +69,21 @@ public class ReviewServiceImpl implements ReviewService, ReviewCommandUseCase {
 
     @Override
     @Transactional
+    public UpdateReviewResult updateReview(UpdateReviewCommand command) {
+        Review review = reviewRepositoryCustom.findByIdAndUserId(command.reviewId(), command.userId())
+                .orElseThrow(() -> resolveNotFoundOrForbidden(command.reviewId(), command.userId()));
+        review.update(command.content(), Rating.of(command.rating()));
+        Review updated = reviewRepository.update(review);
+        reviewStatisticsCachePort.delete(updated.getRestaurantId().toString());
+        return UpdateReviewResult.from(updated);
+    }
+
+    @Override
+    @Transactional
     public DeleteReviewResult deleteReview(DeleteReviewCommand command) {
-        Review review = reviewRepository.findById(command.reviewId())
-                .orElseThrow(() -> new IllegalArgumentException("리뷰가 존재하지 않습니다."));
-        if (!review.getUserId().equals(command.userInfoDto().userId())) {
-            throw new IllegalArgumentException("작성자만 삭제할 수 있습니다.");
-        }
+        Long userId = command.userInfoDto().userId();
+        Review review = reviewRepositoryCustom.findByIdAndUserId(command.reviewId(), userId)
+                .orElseThrow(() -> resolveNotFoundOrForbidden(command.reviewId(), userId));
         review.softDelete();
         reviewStatisticsCachePort.delete(review.getRestaurantId().toString());
 
@@ -83,14 +99,16 @@ public class ReviewServiceImpl implements ReviewService, ReviewCommandUseCase {
     @Transactional
     public void cancelReview(CancelReviewCommand command) {
         log.warn("리뷰 보상 트랜잭션 롤백 요청: reviewId={}, userId={}", command.reviewId(), command.userId());
-        Review review = reviewRepository.findById(command.reviewId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 리뷰입니다: " + command.reviewId()));
-
-        if (!review.getUserId().equals(command.userId())) {
-            throw new IllegalArgumentException("리뷰 작성자와 일치하지 않습니다");
-        }
+        Review review = reviewRepositoryCustom.findByIdAndUserId(command.reviewId(), command.userId())
+                .orElseThrow(() -> resolveNotFoundOrForbidden(command.reviewId(), command.userId()));
         review.softDelete();
         log.info("리뷰 롤백 완료: reviewId={}", command.reviewId());
+    }
+
+    private BusinessException resolveNotFoundOrForbidden(UUID reviewId, Long userId) {
+        return reviewRepository.findById(reviewId)
+                .map(r -> BusinessException.from(CommonErrorCode.FORBIDDEN))
+                .orElseGet(() -> BusinessException.from(CommonErrorCode.NOT_FOUND));
     }
 
     @Override
@@ -103,7 +121,7 @@ public class ReviewServiceImpl implements ReviewService, ReviewCommandUseCase {
     @Transactional(readOnly = true)
     public GetReviewResult findOne(ReviewSearchCondition condition) {
         Review review = reviewRepositoryCustom.findOneByCondition(condition)
-                .orElseThrow(() -> new IllegalArgumentException("리뷰가 존재하지 않습니다."));
+                .orElseThrow(() -> BusinessException.from(CommonErrorCode.NOT_FOUND));
         return GetReviewResult.from(review);
     }
 
