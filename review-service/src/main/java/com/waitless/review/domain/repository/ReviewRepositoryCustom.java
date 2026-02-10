@@ -13,5 +13,6 @@ import java.util.UUID;
 public interface ReviewRepositoryCustom {
     Page<Review> searchByCondition(ReviewSearchCondition condition, Pageable pageable);
     Optional<Review> findOneByCondition(ReviewSearchCondition condition);
-    Map<UUID,ReviewStatisticsProjection> findStatisticsByRestaurantIds(List<UUID> restaurantIds);
+    Optional<Review> findByIdAndUserId(UUID reviewId, Long userId);
+    Map<UUID, ReviewStatisticsProjection> findStatisticsByRestaurantIds(List<UUID> restaurantIds);
 }
