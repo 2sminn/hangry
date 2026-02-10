@@ -1119,3 +1119,14 @@ Content-Type: application/json
 #    "87654321-aaaa-bbbb-cccc-aaaaaaaaaaaa"
  # ]
 #}
+
+### [리뷰 수정 테스트]
+#PUT {{reviewApi}}/{{reviewId}}
+#Authorization: {{access_token}}
+#Content-Type: application/json
+#
+#{
+#  "reviewId": "{{reviewId}}",
+#  "content": "수정된 리뷰 내용입니다. 정말 맛있었어요!",
+#  "rating": 5
+#}
