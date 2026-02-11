@@ -29,8 +29,12 @@ public class PointRankingRedisRepository implements PointRankingCachePort {
 
         if (userIds == null) return List.of();
         return userIds.stream()
-                .filter(id -> id instanceof Long)
-                .map(id -> (Long) id)
+                .map(id -> {
+                    if (id instanceof Long) return (Long) id;
+                    if (id instanceof Integer) return ((Integer) id).longValue();
+                    return null;
+                })
+                .filter(id -> id != null)
                 .collect(Collectors.toList());
     }
 
