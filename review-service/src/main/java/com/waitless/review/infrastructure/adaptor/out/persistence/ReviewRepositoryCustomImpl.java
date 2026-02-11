@@ -36,8 +36,7 @@ public class ReviewRepositoryCustomImpl implements ReviewRepositoryCustom {
                         eqUserId(condition.userId()),
                         eqRestaurantId(condition.restaurantId()),
                         eqRating(condition.rating()),
-                        notDeleted()
-                )
+                        notDeleted())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
@@ -49,8 +48,7 @@ public class ReviewRepositoryCustomImpl implements ReviewRepositoryCustom {
                         eqUserId(condition.userId()),
                         eqRestaurantId(condition.restaurantId()),
                         eqRating(condition.rating()),
-                        notDeleted()
-                )
+                        notDeleted())
                 .fetchOne()).orElse(0L);
 
         return new PageImpl<>(results, pageable, total);
@@ -63,10 +61,20 @@ public class ReviewRepositoryCustomImpl implements ReviewRepositoryCustom {
                         .selectFrom(review)
                         .where(
                                 eqReviewId(condition.reviewId()),
-                                notDeleted()
-                        )
-                        .fetchOne()
-        );
+                                notDeleted())
+                        .fetchOne());
+    }
+
+    @Override
+    public Optional<Review> findByIdAndUserId(UUID reviewId, Long userId) {
+        return Optional.ofNullable(
+                queryFactory
+                        .selectFrom(review)
+                        .where(
+                                eqReviewId(reviewId),
+                                eqUserId(userId),
+                                notDeleted())
+                        .fetchOne());
     }
 
     @Override
@@ -78,13 +86,11 @@ public class ReviewRepositoryCustomImpl implements ReviewRepositoryCustom {
                 .select(
                         review.restaurantId,
                         review.id.countDistinct(),
-                        review.rating.ratingValue.avg()
-                )
+                        review.rating.ratingValue.avg())
                 .from(review)
                 .where(
                         review.restaurantId.in(restaurantIds),
-                        notDeleted()
-                )
+                        notDeleted())
                 .groupBy(review.restaurantId)
                 .fetch();
 

@@ -1,5 +1,7 @@
 package com.waitless.review.application.validator;
 
+import com.waitless.common.exception.BusinessException;
+import com.waitless.common.exception.code.CommonErrorCode;
 import com.waitless.review.application.dto.client.VisitedReservationRequestDto;
 import com.waitless.review.application.dto.client.VisitedReservationResponseDto;
 import com.waitless.review.application.dto.command.PostReviewCommand;
@@ -11,21 +13,22 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @Component
-public class VisitedReservationValidatorImpl implements VisitedReservationValidator{
+public class VisitedReservationValidatorImpl implements VisitedReservationValidator {
 
     private final VisitedReservationPort visitedReservationPort;
     @Override
     public void validate(PostReviewCommand command) {
-        List<VisitedReservationResponseDto> visited =
-                visitedReservationPort.getVisitedReservations(new VisitedReservationRequestDto(command.reservationId()));
+        List<VisitedReservationResponseDto> visited = visitedReservationPort
+                .getVisitedReservations(new VisitedReservationRequestDto(command.reservationId()));
 
         VisitedReservationResponseDto dto = visited.stream()
                 .filter(r -> r.reservationId().equals(command.reservationId()))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("방문 완료된 예약이 아닙니다."));
+                .orElseThrow(() -> BusinessException.from(CommonErrorCode.NOT_FOUND));
 
-        if (!dto.userId().equals(command.userInfoDto().userId()) || !dto.restaurantId().equals(command.restaurantId())) {
-            throw new IllegalArgumentException("예약 정보와 사용자 정보가 일치하지 않습니다.");
+        if (!dto.userId().equals(command.userInfoDto().userId())
+                || !dto.restaurantId().equals(command.restaurantId())) {
+            throw BusinessException.from(CommonErrorCode.FORBIDDEN);
         }
     }
 }

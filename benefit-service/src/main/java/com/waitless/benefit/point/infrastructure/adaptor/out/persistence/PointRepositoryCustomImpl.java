@@ -5,7 +5,6 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.waitless.benefit.point.domain.entity.Point;
 import com.waitless.benefit.point.domain.entity.QPoint;
-import com.waitless.benefit.point.domain.repository.PointStatisticsProjection;
 import com.waitless.benefit.point.domain.repository.PointRepositoryCustom;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -13,7 +12,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -62,9 +60,9 @@ public class PointRepositoryCustomImpl implements PointRepositoryCustom {
     }
     @Override
     public int getTotalPointByUserId(Long userId) {
-        PointStatisticsProjection result = queryFactory
+        PointStatisticsProjectionDto result = queryFactory
                 .select(Projections.fields(
-                        PointStatisticsProjection.class,
+                        PointStatisticsProjectionDto.class,
                         point.userId.as("userId"),
                         point.amount.pointValue.sum().as("totalPoint")
                 ))
@@ -73,10 +71,12 @@ public class PointRepositoryCustomImpl implements PointRepositoryCustom {
                         eqUserId(userId),
                         notDeleted()
                 )
+                .groupBy(point.userId)
                 .fetchOne();
 
-        return result != null ? result.getTotalPoint() : 0;
+        return result != null && result.getTotalPoint() != null ? result.getTotalPoint() : 0;
     }
+     /*미사용 메소드 - Redis ZSET으로 대체됨
     @Override
     public int getUserRanking(Long userId) {
         List<PointStatisticsProjection> userTotals = queryFactory
@@ -99,8 +99,7 @@ public class PointRepositoryCustomImpl implements PointRepositoryCustom {
             }
         }
         return rank > 0 ? rank : 0;
-    }
-
+    } */
 
     private BooleanExpression eqUserId(Long userId) {
         return userId != null ? point.userId.eq(userId) : null;

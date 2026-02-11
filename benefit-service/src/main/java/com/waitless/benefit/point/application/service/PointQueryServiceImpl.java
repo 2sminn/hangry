@@ -10,6 +10,8 @@ import com.waitless.benefit.point.application.service.cache.PointQueryCache;
 import com.waitless.benefit.point.domain.entity.Point;
 import com.waitless.benefit.point.domain.repository.PointRepositoryCustom;
 import com.waitless.benefit.point.domain.vo.PointSearchCondition;
+import com.waitless.common.exception.BusinessException;
+import com.waitless.common.exception.code.CommonErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -34,7 +36,7 @@ public class PointQueryServiceImpl implements PointQueryService {
     public GetPointResult findOne(PointSearchCondition condition) {
         return pointRepositoryCustom.findByReviewId(condition.reviewId())
                 .map(GetPointResult::from)
-                .orElseThrow(() -> new IllegalArgumentException("해당 리뷰에 대한 포인트가 존재하지 않습니다."));
+                .orElseThrow(() -> BusinessException.from(CommonErrorCode.NOT_FOUND));
     }
 
     @Override
@@ -56,17 +58,16 @@ public class PointQueryServiceImpl implements PointQueryService {
         // 1. Redis ZSET에서 TopN userIds 조회
         List<Long> topUserIds = pointRankingCachePort.getTopUserIds(command.topN());
         if (topUserIds.isEmpty()) {
-            throw new IllegalArgumentException("TopN 랭킹 데이터가 없습니다.");
+            throw BusinessException.from(CommonErrorCode.NOT_FOUND);
         }
         // 2. 각각 유저별 포인트 조회하고, 순위 부여
-        List<SearchRankingResult> rankingResults =
-                topUserIds.stream()
-                        .map(userId -> {
-                            int totalPoint = pointRepositoryCustom.getTotalPointByUserId(userId);
-                            int rank = pointRankingCachePort.getMyRanking(userId).intValue(); // 0-based → 1-based
-                            return SearchRankingResult.of(userId, totalPoint, rank);
-                        })
-                        .toList();
+        List<SearchRankingResult> rankingResults = topUserIds.stream()
+                .map(userId -> {
+                    int totalPoint = pointRepositoryCustom.getTotalPointByUserId(userId);
+                    int rank = pointRankingCachePort.getMyRanking(userId).intValue(); // 0-based → 1-based
+                    return SearchRankingResult.of(userId, totalPoint, rank);
+                })
+                .toList();
         Page<SearchRankingResult> page = new PageImpl<>(rankingResults);
         return SearchRankingResult.toPageCommand(page);
     }

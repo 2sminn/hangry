@@ -4,7 +4,6 @@ import com.waitless.benefit.point.domain.vo.PointAmountCache;
 import com.waitless.benefit.point.domain.vo.PointRankingCache;
 
 public interface PointStatisticsCachePort {
-
     void saveAmount(Long userId, PointAmountCache cache, long ttlSeconds);
     PointAmountCache findAmount(Long userId);
 

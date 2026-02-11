@@ -11,5 +11,6 @@ public interface PointRepositoryCustom {
     Page<Point> findAllByUserId(Long userId, Pageable pageable);
     Optional<Point> findByReviewId(UUID reviewId);
     int getTotalPointByUserId(Long userId);
-    int getUserRanking(Long userId);
+    // 미사용 메소드 - Redis ZSET으로 대체됨
+    // int getUserRanking(Long userId);
 }

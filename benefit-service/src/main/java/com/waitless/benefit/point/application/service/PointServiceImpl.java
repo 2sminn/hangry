@@ -9,8 +9,11 @@ import com.waitless.benefit.point.application.port.out.PointRankingCachePort;
 import com.waitless.benefit.point.application.port.out.PointStatisticsCachePort;
 import com.waitless.benefit.point.domain.entity.Point;
 import com.waitless.benefit.point.domain.repository.PointRepository;
+import com.waitless.benefit.point.domain.repository.PointRepositoryCustom;
 import com.waitless.common.event.PointIssuedEvent;
 import com.waitless.common.event.PointIssuedFailedEvent;
+import com.waitless.common.exception.BusinessException;
+import com.waitless.common.exception.code.CommonErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,6 +27,7 @@ import java.util.UUID;
 public class PointServiceImpl implements PointCommandUseCase {
 
     private final PointRepository pointRepository;
+    private final PointRepositoryCustom pointRepositoryCustom;
     private final PointServiceMapper pointServiceMapper;
     private final PointOutboxPort pointOutboxPort;
     private final PointRankingCachePort pointRankingCachePort;
@@ -32,7 +36,7 @@ public class PointServiceImpl implements PointCommandUseCase {
     @Override
     @Transactional
     public PostPointResult createPoint(PostPointCommand command) {
-        if(pointRepository.existsByUserIdAndReservationId(command.userId(), command.reservationId())) {
+        if (pointRepository.existsByUserIdAndReservationId(command.userId(), command.reservationId())) {
             log.warn("중복 포인트 적립 시도: userId={}, reservationId={}", command.userId(), command.reservationId());
             PointIssuedFailedEvent event = PointIssuedFailedEvent.builder()
                     .reviewId(command.reviewId())
@@ -45,9 +49,11 @@ public class PointServiceImpl implements PointCommandUseCase {
         Point point = pointServiceMapper.toEntity(command);
         Point saved = pointRepository.save(point);
 
-        pointStatisticsCachePort.deleteAmount(saved.getUserId());         // 총합 캐시 삭제
-        pointStatisticsCachePort.deleteMyRanking(saved.getUserId());      // 개인 랭킹 캐시 삭제
-        pointRankingCachePort.updateRanking(saved.getUserId(), saved.getAmount().getPointValue()); // ZSET 업데이트
+        pointStatisticsCachePort.deleteAmount(saved.getUserId()); // 총합 캐시 삭제
+        pointStatisticsCachePort.deleteMyRanking(saved.getUserId()); // 개인 랭킹 캐시 삭제
+        // ZSET에는 누적 총합으로 반영 (마지막 값이 아닌 DB 기준 총합)
+        int cumulativeTotal = pointRepositoryCustom.getTotalPointByUserId(saved.getUserId());
+        pointRankingCachePort.updateRanking(saved.getUserId(), cumulativeTotal);
 
         PointIssuedEvent event = PointIssuedEvent.builder()
                 .pointId(saved.getId())
@@ -66,11 +72,17 @@ public class PointServiceImpl implements PointCommandUseCase {
     @Transactional
     public void deletePointByReview(UUID reviewId, Long userId) {
         Point point = pointRepository.findByReviewIdAndUserId(reviewId, userId)
-                .orElseThrow(() -> new IllegalStateException("해당 리뷰에 대한 포인트가 없습니다."));
+                .orElseThrow(() -> BusinessException.from(CommonErrorCode.NOT_FOUND));
         point.softDelete();
 
-        pointStatisticsCachePort.deleteAmount(userId);   // 총합 캐시 삭제
+        pointStatisticsCachePort.deleteAmount(userId); // 총합 캐시 삭제
         pointStatisticsCachePort.deleteMyRanking(userId); // 개인 랭킹 캐시 삭제
-        pointRankingCachePort.removeUser(userId);         // ZSET에서 유저 제거
+        // 삭제 후 남은 누적 총합 반영: 남은 포인트가 있으면 ZSET 점수 갱신, 없으면 ZSET에서 제거
+        int remainingTotal = pointRepositoryCustom.getTotalPointByUserId(userId);
+        if (remainingTotal > 0) {
+            pointRankingCachePort.updateRanking(userId, remainingTotal);
+        } else {
+            pointRankingCachePort.removeUser(userId);
+        }
     }
 }
